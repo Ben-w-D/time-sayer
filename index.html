@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Time Announcer</title>
+</head>
+<body>
+	<h1>This website will periodically announce the time.</h1>
+	<h2>The time will be announced in sync with all other computers with this website open.</h2>
+	<button onclick="start()" id="button">Load Voices</button>
+	
+	<style>
+		body{
+			font-family:sans-serif;
+			text-align: center;
+		}
+	</style>
+	<script>
+		// Min included, max not
+		let speaker;
+		function getRndInteger(min, max) {
+			return Math.floor(Math.random() * (max - min)) + min;
+		}
+
+		let seed = 0;
+		function seededRandom(min, max){
+			let x = Math.sin(seed) * 10000;
+			x = x - Math.floor(x);
+			return Math.floor(x * (max - min)) + min;
+		}
+
+		function start(){
+			speaker = new SpeechSynthesisUtterance();
+			begin();
+			document.getElementById("button").textContent = "Run";
+			
+		}
+
+		let randMax = 10;
+		let randTarget = 5;
+
+		let timeMax = 10;
+		let timeTarget = 5;
+
+		function begin(){
+			
+
+			let time;
+			let d;
+			const speech = window.speechSynthesis;
+			let v = speech.getVoices();
+			if (v.length == 0){
+				if (document.getElementById('button').textContent == "Run") alert("Please click again.");
+				return;
+			}
+			let voices = [];
+			let daniel;
+			console.log(v);
+			for (let i = 0; i<v.length; ++i){
+				if (v[i].lang.substring(0, 2) == "en"){
+					console.log("HI");
+					voices.push(i)
+				};
+				if (v[i].name.toLowerCase() == "daniel") daniel = i;
+			}
+			let vLength = voices.length;
+			for (let i = 0; i<vLength/4; ++i){
+				voices.push(daniel);
+			}
+			let hasSpoken = false;
+			let currentRandom;
+			setInterval(()=>{
+				d = new Date(); 
+				time = Date.now();
+				seed = Math.round(time/1000);
+				
+				console.log("Time is: " + Math.round(time/1000)%timeMax);
+				if (Math.round(time/1000)%timeMax == timeTarget && !hasSpoken){
+					hasSpoken = true;
+					currentRandom = seededRandom(0, randMax);
+					console.log("Random is: " + currentRandom);
+					if (currentRandom == randTarget){
+						
+						speaker.voice = speech.getVoices()[voices[getRndInteger(0, voices.length)]];
+						console.log("voice is " + speaker.voice.name);
+
+						speaker.pitch = Math.random() * 2;
+						console.log("pitch is " + speaker.pitch);
+
+						speaker.rate = (Math.round(time/100)%3) / 2;
+						console.log("speed is " + speaker.rate);
+
+						speaker.text = "The current time is " + d.toLocaleTimeString().substring(0, d.toLocaleTimeString().length - 6);
+						console.log("The current time is " + d.toLocaleTimeString().substring(0, d.toLocaleTimeString().length - 6))
+
+						speech.speak(speaker);
+						
+					}
+				}
+				if (Math.round(time/1000)%timeMax != timeTarget){
+					hasSpoken = false;
+				}
+			}, 10);
+		}
+
+		document.addEventListener('keydown', (e)=>{
+			if (e.key == "Backspace"){
+				if (confirm("Reset values? Note: this will change how often the program will announce the time. Modifying these values will desynchronize your computer from others.")){
+					let tM = prompt("Enter time maximum:");
+					let tT = prompt("Enter time target:");
+					let rM = prompt("Enter random maximum:");
+					let rT = prompt("Enter random target:");
+					
+					timeMax = tM ? tM : 10;
+					timeTarget = tT ? tT : 5;
+					
+					randMax = rM ? rM : 10;
+					randTarget = rT ? rT : 5;
+
+					alert(`Values: timeMax = ${timeMax}, timeTarget = ${timeTarget}, randMax = ${randMax}, randTarget = ${randTarget}`);
+
+				}
+			}
+		})
+	</script>
+</body>
+</html>

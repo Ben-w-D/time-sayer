@@ -25,9 +25,11 @@
 		}
 
 		let seed = 0;
+		let randomRaw = 0;
 		function seededRandom(min, max){
 			let x = Math.sin(seed) * 10000;
 			x = x - Math.floor(x);
+			randomRaw = x;
 			return Math.floor(x * (max - min)) + min;
 		}
 
@@ -83,7 +85,7 @@
 					console.log("Random is: " + currentRandom);
 					if (currentRandom == randTarget){
 						
-						speaker.voice = speech.getVoices()[voices[getRndInteger(0, voices.length)]];
+						speaker.voice = speech.getVoices()[voices[seededRandom(0, voices.length)]];
 						console.log("voice is " + speaker.voice.name);
 
 						speaker.pitch = Math.random() * 2;
